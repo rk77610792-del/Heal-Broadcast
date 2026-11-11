@@ -9,9 +9,10 @@ import {
   Bookmark, 
   UserCheck, 
   Mic, 
-  Sparkles,
-  ArrowRight,
-  Heart
+  Sparkles, 
+  ArrowRight, 
+  Heart,
+  Music2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { NavigationTab } from '../types';
@@ -34,6 +35,7 @@ export const Sidebar: React.FC = () => {
   }> = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'now-live', label: 'Now Live', icon: Radio, hasLivePulse: true, badge: 'LIVE' },
+    { id: 'music', label: 'Music & Playlists', icon: Music2 },
     { id: 'confessions', label: 'Confessions', icon: HeartHandshake },
     { id: 'episodes', label: 'Episodes', icon: Headphones },
     { id: 'community', label: 'Community', icon: Users },
@@ -61,10 +63,10 @@ export const Sidebar: React.FC = () => {
             </div>
             <div className="hidden lg:flex flex-col">
               <span className="font-script text-2xl font-bold bg-gradient-to-r from-[#FF4D8D] via-[#F06292] to-[#c084fc] bg-clip-text text-transparent leading-none">
-                Love Broadcast
+                Heal Broadcast
               </span>
               <span className="text-[10px] tracking-widest text-[#8C86A0] uppercase mt-1 flex items-center gap-1 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 98.4 FM Midnight
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 98.4 FM Midnight Healing
               </span>
             </div>
           </div>
@@ -178,6 +180,7 @@ export const Sidebar: React.FC = () => {
         {[
           { id: 'home', label: 'Home', icon: Home },
           { id: 'now-live', label: 'Live', icon: Radio, hasLivePulse: true },
+          { id: 'music', label: 'Music', icon: Music2 },
           { id: 'confessions', label: 'Confess', icon: HeartHandshake },
           { id: 'episodes', label: 'Episodes', icon: Headphones },
           { id: 'messages', label: 'Inbox', icon: MessageSquareHeart, badge: unreadMessagesCount || undefined },

@@ -47,7 +47,7 @@ export const ConfessionCard: React.FC<{ confession: Confession }> = ({ confessio
 
   const handleShare = () => {
     try {
-      navigator.clipboard.writeText(`"${confession.title}" - Anonymous confession on Love Broadcast`);
+      navigator.clipboard.writeText(`"${confession.title}" - Anonymous confession on Heal Broadcast`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

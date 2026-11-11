@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Play, 
   Pause, 
-  RotateCcw, 
-  RotateCw, 
+  SkipBack, 
+  SkipForward, 
   Volume2, 
   VolumeX, 
   Heart, 
@@ -12,16 +12,23 @@ import {
   ChevronUp, 
   Sliders, 
   Sparkles,
-  Music2
+  Music2,
+  ListPlus,
+  Disc
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { radioAudio } from '../utils/audioSynthesizer';
 
 export const AudioPlayer: React.FC = () => {
   const { 
+    activeMediaType,
     activeEpisode, 
+    activeSong,
+    activePlaylist,
     isPlaying, 
-    togglePlayEpisode, 
+    togglePlayActive,
+    playNextTrack,
+    playPrevTrack,
     playbackProgress, 
     playbackTime, 
     seekToProgress, 
@@ -30,6 +37,8 @@ export const AudioPlayer: React.FC = () => {
     isLiveMode,
     toggleLikeEpisode,
     toggleSaveEpisode,
+    toggleLikeSong,
+    openAddToPlaylistModal,
     setCurrentTab
   } = useApp();
 
@@ -51,7 +60,14 @@ export const AudioPlayer: React.FC = () => {
     return () => cancelAnimationFrame(animId);
   }, [isPlaying]);
 
-  if (!activeEpisode) return null;
+  const currentItem = activeMediaType === 'song' ? activeSong : activeEpisode;
+  if (!currentItem) return null;
+
+  const isSong = activeMediaType === 'song' && activeSong !== null;
+  const currentTitle = isSong ? activeSong.title : activeEpisode?.title;
+  const currentSubtitle = isSong ? activeSong.artist : activeEpisode?.host;
+  const currentCover = isSong ? activeSong.coverImage : activeEpisode?.coverImage;
+  const currentDurationStr = isSong ? activeSong.duration : (isLiveMode ? 'LIVE' : activeEpisode?.duration);
 
   const formatSeconds = (sec: number) => {
     const mins = Math.floor(sec / 60);
@@ -85,7 +101,7 @@ export const AudioPlayer: React.FC = () => {
       className="fixed bottom-0 md:bottom-0 left-0 right-0 z-30 bg-[#14121C]/95 backdrop-blur-xl border-t border-white/10 px-3 sm:px-6 py-2.5 shadow-2xl transition-all"
     >
       <div className="max-w-7xl mx-auto flex flex-col gap-1.5">
-        {/* Progress Bar (Scrubbable for recorded episodes, pulsing for live stream) */}
+        {/* Progress Bar */}
         <div className="w-full flex items-center gap-3">
           <span className="text-[10px] text-[#8C86A0] font-mono min-w-[32px] text-right">
             {formatSeconds(playbackTime)}
@@ -110,21 +126,21 @@ export const AudioPlayer: React.FC = () => {
           </div>
 
           <span className="text-[10px] text-[#8C86A0] font-mono min-w-[32px]">
-            {isLiveMode ? 'LIVE' : activeEpisode.duration}
+            {currentDurationStr}
           </span>
         </div>
 
         {/* Player Controls & Info */}
         <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Episode Info */}
+          {/* Item Info */}
           <div 
-            onClick={() => setCurrentTab(isLiveMode ? 'now-live' : 'episodes')}
-            className="flex items-center gap-3 min-w-0 max-w-[45%] sm:max-w-xs cursor-pointer group"
+            onClick={() => setCurrentTab(isSong ? 'music' : (isLiveMode ? 'now-live' : 'episodes'))}
+            className="flex items-center gap-3 min-w-0 max-w-[42%] sm:max-w-xs cursor-pointer group"
           >
             <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/10 group-hover:ring-[#FF4D8D]/50 transition-all">
               <img 
-                src={activeEpisode.coverImage} 
-                alt={activeEpisode.title}
+                src={currentCover} 
+                alt={currentTitle}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
               />
               {isPlaying && (
@@ -138,40 +154,53 @@ export const AudioPlayer: React.FC = () => {
               )}
             </div>
 
-            <div className="flex flex-col min-w-0">
+            <div className="flex flex-col min-w-0 text-left">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs sm:text-sm font-semibold text-white truncate group-hover:text-pink-300 transition-colors">
-                  {activeEpisode.title}
+                  {currentTitle}
                 </span>
-                {isLiveMode && (
+                {isLiveMode ? (
                   <span className="hidden sm:inline-flex px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
                     LIVE
                   </span>
+                ) : isSong ? (
+                  <span className="hidden sm:inline-flex px-1.5 py-0.2 rounded-full text-[9px] font-semibold bg-[#8B5CF6]/20 text-purple-300 border border-[#8B5CF6]/30">
+                    SONG
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="flex items-center gap-1 text-[11px] text-[#8C86A0] truncate">
+                <span className="truncate">{currentSubtitle}</span>
+                {activePlaylist && (
+                  <span className="hidden lg:inline text-pink-300/80 truncate">
+                    • {activePlaylist.name}
+                  </span>
                 )}
               </div>
-              <span className="text-[11px] text-[#8C86A0] truncate">
-                {activeEpisode.host}
-              </span>
             </div>
           </div>
 
           {/* Center Playback Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Skip Back 15s */}
+            {/* Previous Track / Rewind */}
             <button
-              onClick={() => seekToProgress(Math.max(0, playbackProgress - 3))}
+              onClick={() => {
+                if (isSong) playPrevTrack();
+                else seekToProgress(Math.max(0, playbackProgress - 3));
+              }}
               disabled={isLiveMode}
               className="p-1.5 sm:p-2 rounded-full text-[#8C86A0] hover:text-white disabled:opacity-30 transition-colors"
-              title="Rewind 15 seconds"
+              title="Previous Track"
             >
-              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <SkipBack className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
             </button>
 
             {/* Play/Pause Button */}
             <button
-              onClick={() => togglePlayEpisode(activeEpisode)}
+              onClick={togglePlayActive}
               className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-[#FF4D8D] to-[#F06292] text-white flex items-center justify-center shadow-lg glow-pink-sm hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              title={isPlaying ? 'Pause' : 'Play Broadcast'}
+              title={isPlaying ? 'Pause' : 'Play'}
               aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
             >
               {isPlaying ? (
@@ -181,18 +210,21 @@ export const AudioPlayer: React.FC = () => {
               )}
             </button>
 
-            {/* Skip Forward 15s */}
+            {/* Next Track / Forward */}
             <button
-              onClick={() => seekToProgress(Math.min(100, playbackProgress + 3))}
+              onClick={() => {
+                if (isSong) playNextTrack();
+                else seekToProgress(Math.min(100, playbackProgress + 3));
+              }}
               disabled={isLiveMode}
               className="p-1.5 sm:p-2 rounded-full text-[#8C86A0] hover:text-white disabled:opacity-30 transition-colors"
-              title="Forward 15 seconds"
+              title="Next Track"
             >
-              <RotateCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <SkipForward className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
             </button>
           </div>
 
-          {/* Right Tools: Visualizer, Volume, Like, Save */}
+          {/* Right Tools: Visualizer, Playlist Add, Like, Volume */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Mini Visualizer */}
             <div className="hidden lg:flex items-end gap-1 h-5 px-2 bg-white/5 rounded-lg border border-white/5">
@@ -205,30 +237,31 @@ export const AudioPlayer: React.FC = () => {
               ))}
             </div>
 
-            {/* Like Episode */}
+            {/* Add to Playlist button if song */}
+            {isSong && activeSong && (
+              <button
+                onClick={() => openAddToPlaylistModal(activeSong)}
+                className="hidden sm:inline-flex p-1.5 sm:p-2 rounded-full text-[#8C86A0] hover:text-white hover:bg-white/5 transition-colors"
+                title="Add current song to playlist"
+              >
+                <ListPlus className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Like button */}
             <button
-              onClick={() => toggleLikeEpisode(activeEpisode.id)}
+              onClick={() => {
+                if (isSong && activeSong) toggleLikeSong(activeSong.id);
+                else if (activeEpisode) toggleLikeEpisode(activeEpisode.id);
+              }}
               className={`p-1.5 sm:p-2 rounded-full transition-colors ${
-                activeEpisode.isLiked 
+                (isSong ? activeSong?.isLiked : activeEpisode?.isLiked)
                   ? 'text-[#FF4D8D] bg-[#FF4D8D]/10' 
                   : 'text-[#8C86A0] hover:text-[#FF4D8D] hover:bg-white/5'
               }`}
-              title="Like this episode"
+              title="Like track"
             >
-              <Heart className={`w-4 h-4 ${activeEpisode.isLiked ? 'fill-current' : ''}`} />
-            </button>
-
-            {/* Save Episode */}
-            <button
-              onClick={() => toggleSaveEpisode(activeEpisode.id)}
-              className={`hidden sm:inline-flex p-1.5 sm:p-2 rounded-full transition-colors ${
-                activeEpisode.isSaved 
-                  ? 'text-purple-400 bg-purple-500/10' 
-                  : 'text-[#8C86A0] hover:text-purple-300 hover:bg-white/5'
-              }`}
-              title="Bookmark episode"
-            >
-              <Bookmark className={`w-4 h-4 ${activeEpisode.isSaved ? 'fill-current' : ''}`} />
+              <Heart className={`w-4 h-4 ${(isSong ? activeSong?.isLiked : activeEpisode?.isLiked) ? 'fill-current' : ''}`} />
             </button>
 
             {/* Volume Control */}

@@ -1,6 +1,6 @@
 {
-  "name": "Love Broadcast",
-  "description": "An anonymous confessions and live-podcast community platform with late-night radio vibes, interactive chat, and community stories.",
+  "name": "Heal Broadcast",
+  "description": "An anonymous confessions, live-podcast radio and music streaming community platform with late-night healing vibes, interactive chat, and community playlists.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

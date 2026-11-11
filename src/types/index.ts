@@ -25,6 +25,37 @@ export interface Confession {
   songDedication?: string;
 }
 
+export interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  album?: string;
+  coverImage: string;
+  duration: string;
+  durationSeconds: number;
+  genre: string;
+  mood?: string;
+  audioTheme?: 'lofi' | 'ambient' | 'jazz' | 'rain';
+  audioUrl?: string;
+  previewUrl?: string;
+  externalUrl?: string;
+  releaseYear?: string;
+  lyricsSnippet?: string;
+  plays: number;
+  isLiked?: boolean;
+}
+
+export interface Playlist {
+  id: string;
+  name: string;
+  description: string;
+  coverImage: string;
+  colorGradient: string;
+  songIds: string[];
+  isCustom?: boolean;
+  createdBy: string;
+}
+
 export interface Episode {
   id: string;
   title: string;
@@ -44,6 +75,8 @@ export interface Episode {
   audioTheme?: 'lofi' | 'ambient' | 'jazz' | 'rain';
 }
 
+export type PopMessageStyle = 'love' | 'midnight' | 'flame' | 'radio' | 'warm';
+
 export interface ChatMessage {
   id: string;
   username: string;
@@ -53,6 +86,11 @@ export interface ChatMessage {
   isSystem?: boolean;
   isHost?: boolean;
   isUser?: boolean;
+  popStyle?: PopMessageStyle;
+  popBadge?: string;
+  popHighlight?: boolean;
+  donationAmount?: string;
+  heartsCount?: number;
 }
 
 export interface CommunityRoom {
@@ -121,6 +159,7 @@ export type NavigationTab =
   | 'now-live' 
   | 'confessions' 
   | 'episodes' 
+  | 'music'
   | 'community' 
   | 'messages' 
   | 'my-list' 

@@ -25,10 +25,10 @@ export const AboutPage: React.FC = () => {
             <span>Late Night Radio Collective</span>
           </div>
           <h1 className="font-script text-3xl sm:text-5xl text-white font-bold tracking-wide mb-3">
-            About Love Broadcast
+            About Heal Broadcast
           </h1>
           <p className="text-xs sm:text-sm text-[#E8E4F0]/90 leading-relaxed font-light">
-            Founded on the quietest hour of the night, Love Broadcast is an open-frequency harbor for vulnerable confessions, unsent letters, and gentle companionship. In a world rushing from one notification to the next, we slow down to listen.
+            Founded on the quietest hour of the night, Heal Broadcast is an open-frequency harbor for vulnerable confessions, unsent letters, healing melodies, and gentle companionship. In a world rushing from one notification to the next, we slow down to listen and mend.
           </p>
         </div>
       </div>

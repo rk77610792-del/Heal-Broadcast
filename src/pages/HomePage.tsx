@@ -9,18 +9,24 @@ import {
   ArrowRight, 
   Activity, 
   Compass, 
-  ChevronRight,
-  Flame,
-  Volume2
+  ChevronRight, 
+  Flame, 
+  Volume2,
+  Music2,
+  ListPlus,
+  Disc
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ConfessionCard } from '../components/ConfessionCard';
 import { EpisodeCard } from '../components/EpisodeCard';
+import { SongCard } from '../components/SongCard';
 
 export const HomePage: React.FC = () => {
   const { 
     confessions, 
     episodes, 
+    songs,
+    playlists,
     setCurrentTab, 
     startLiveStream, 
     setIsConfessionModalOpen,
@@ -76,7 +82,7 @@ export const HomePage: React.FC = () => {
             {/* Title with Romantic Script font */}
             <h1 className="font-script text-4xl sm:text-6xl text-white font-bold tracking-wide leading-tight mb-3 drop-shadow-md">
               <span className="bg-gradient-to-r from-pink-300 via-[#FF4D8D] to-purple-300 bg-clip-text text-transparent">
-                Love Broadcast
+                Heal Broadcast
               </span>
             </h1>
 
@@ -185,22 +191,22 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 2 */}
+        {/* Card 2: Music & Playlists */}
         <div 
-          onClick={() => setCurrentTab('community')}
-          className="group relative cursor-pointer overflow-hidden rounded-2xl bg-[#1B1826] border border-white/6 p-5 transition-all duration-300 hover:border-[#8B5CF6]/40 hover:shadow-xl hover:-translate-y-1"
+          onClick={() => setCurrentTab('music')}
+          className="group relative cursor-pointer overflow-hidden rounded-2xl bg-[#1B1826] border border-white/6 p-5 transition-all duration-300 hover:border-[#FF4D8D]/40 hover:shadow-xl hover:-translate-y-1"
         >
           <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-[#8B5CF6] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <Users className="w-5 h-5" />
+            <Music2 className="w-5 h-5" />
           </div>
-          <h3 className="text-base font-bold text-white mb-1 group-hover:text-purple-300 transition-colors">
-            Join the Community
+          <h3 className="text-base font-bold text-white mb-1 group-hover:text-pink-300 transition-colors">
+            Search Songs & Playlists
           </h3>
           <p className="text-xs text-[#8C86A0] leading-relaxed mb-4">
-            Real conversations with real people. Six quiet rooms for every heart stage.
+            Search any track, play it with lofi chords, and build your midnight playlists.
           </p>
           <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8B5CF6]">
-            <span>Explore rooms</span>
+            <span>Explore music & playlists</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
@@ -223,6 +229,31 @@ export const HomePage: React.FC = () => {
             <span>Browse library</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
+        </div>
+      </section>
+
+      {/* TRENDING SONGS & PLAYLISTS PREVIEW ROW */}
+      <section aria-label="Trending Songs" className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Disc className="w-5 h-5 text-[#FF4D8D]" />
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+              Midnight Songs • Play Any Track
+            </h2>
+          </div>
+          <button
+            onClick={() => setCurrentTab('music')}
+            className="text-xs text-[#8C86A0] hover:text-[#FF4D8D] flex items-center gap-1 transition-colors font-medium"
+          >
+            <span>Search all songs & playlists</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {songs.slice(0, 4).map((song) => (
+            <SongCard key={song.id} song={song} isCompact={true} />
+          ))}
         </div>
       </section>
 

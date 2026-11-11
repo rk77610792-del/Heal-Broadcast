@@ -5,10 +5,12 @@ import { Header } from './components/Header';
 import { LiveChat } from './components/LiveChat';
 import { AudioPlayer } from './components/AudioPlayer';
 import { ConfessionModal } from './components/ConfessionModal';
+import { PlaylistModal } from './components/PlaylistModal';
 import { HomePage } from './pages/HomePage';
 import { LivePage } from './pages/LivePage';
 import { ConfessionsPage } from './pages/ConfessionsPage';
 import { EpisodesPage } from './pages/EpisodesPage';
+import { MusicPage } from './pages/MusicPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { MyListPage } from './pages/MyListPage';
@@ -24,6 +26,8 @@ const MainLayout: React.FC = () => {
         return <HomePage />;
       case 'now-live':
         return <LivePage />;
+      case 'music':
+        return <MusicPage />;
       case 'confessions':
         return <ConfessionsPage />;
       case 'episodes':
@@ -97,6 +101,9 @@ const MainLayout: React.FC = () => {
 
       {/* Global Anonymous Confession Modal */}
       <ConfessionModal />
+
+      {/* Global Add to Playlist Modal */}
+      <PlaylistModal />
     </div>
   );
 };

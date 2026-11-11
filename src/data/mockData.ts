@@ -1,4 +1,4 @@
-import { Confession, Episode, ChatMessage, CommunityRoom, Conversation, NotificationItem, UserProfile } from '../types';
+import { Confession, Episode, ChatMessage, CommunityRoom, Conversation, NotificationItem, UserProfile, Song, Playlist } from '../types';
 
 export const INITIAL_CONFESSIONS: Confession[] = [
   {
@@ -277,7 +277,7 @@ export const INITIAL_EPISODES: Episode[] = [
     duration: '49:30',
     durationSeconds: 2970,
     coverImage: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80',
-    description: 'We read 10 anonymous letters submitted through the Love Broadcast portal that will never reach their intended recipients. Soft guitar background by Leo Miller.',
+    description: 'We read 10 anonymous letters submitted through the Heal Broadcast portal that will never reach their intended recipients. Soft guitar background by Leo Miller.',
     releaseDate: 'Oct 27, 2026',
     likes: 4210,
     listens: 45200,
@@ -346,6 +346,10 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
     avatarColor: 'from-violet-500 to-purple-400',
     text: 'Listening from Berlin where it is 4 AM and quiet outside. Anyone else awake?',
     timestamp: '23:18',
+    popStyle: 'midnight',
+    popBadge: '🌟 MIDNIGHT POP',
+    popHighlight: true,
+    heartsCount: 19
   },
   {
     id: 'm-3',
@@ -356,7 +360,7 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   },
   {
     id: 'm-4',
-    username: 'Love Broadcast Bot',
+    username: 'Heal Broadcast Bot',
     avatarColor: 'from-rose-600 to-pink-500',
     text: '🎧 You are listening to Live Stream #142: Late Night Whispers. 12,480 people online.',
     timestamp: '23:19',
@@ -368,7 +372,11 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
     avatarColor: 'from-pink-500 to-fuchsia-500',
     text: 'Remember lovers and dreamers: send your live voice notes or drop a confession in the box! We are reading in 5 mins.',
     timestamp: '23:20',
-    isHost: true
+    isHost: true,
+    popStyle: 'radio',
+    popBadge: '🎙️ HOST PINNED POP',
+    popHighlight: true,
+    heartsCount: 142
   },
   {
     id: 'm-6',
@@ -376,6 +384,10 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
     avatarColor: 'from-amber-500 to-orange-400',
     text: 'Currently drinking tea wrapped in a fleece blanket. This broadcast is my safe haven every Wednesday.',
     timestamp: '23:20',
+    popStyle: 'warm',
+    popBadge: '☕ WARM HUG',
+    popHighlight: true,
+    heartsCount: 36
   },
   {
     id: 'm-7',
@@ -383,6 +395,10 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
     avatarColor: 'from-red-500 to-rose-400',
     text: 'Sending love to everyone who is missing someone who is no longer here ❤️',
     timestamp: '23:21',
+    popStyle: 'love',
+    popBadge: '💖 LOVE POP',
+    popHighlight: true,
+    heartsCount: 88
   },
   {
     id: 'm-8',
@@ -400,26 +416,84 @@ export const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   }
 ];
 
-export const CHAT_MESSAGE_POOL: Array<{ username: string; avatarColor: string; text: string; isSystem?: boolean }> = [
-  { username: 'SilverMist', avatarColor: 'from-slate-400 to-zinc-500', text: 'This music selection is pure magic tonight ✨' },
+export const CHAT_MESSAGE_POOL: Array<{ 
+  username: string; 
+  avatarColor: string; 
+  text: string; 
+  isSystem?: boolean;
+  popStyle?: 'love' | 'midnight' | 'flame' | 'radio' | 'warm';
+  popBadge?: string;
+  popHighlight?: boolean;
+  heartsCount?: number;
+}> = [
+  { 
+    username: 'SilverMist', 
+    avatarColor: 'from-slate-400 to-zinc-500', 
+    text: 'This music selection is pure magic tonight ✨',
+    popStyle: 'midnight',
+    popBadge: '🌟 MIDNIGHT POP',
+    popHighlight: true,
+    heartsCount: 24
+  },
   { username: 'GoldenSunset', avatarColor: 'from-amber-400 to-yellow-500', text: 'To whoever needs to hear this: you are worthy of gentle, unhurried love.' },
   { username: 'LofiLover', avatarColor: 'from-emerald-400 to-teal-500', text: 'Can anyone name the background vinyl sample playing right now?' },
-  { username: 'StarlightWanderer', avatarColor: 'from-pink-400 to-rose-500', text: 'Holding hands while listening to this with my partner of 6 years 🤍' },
+  { 
+    username: 'StarlightWanderer', 
+    avatarColor: 'from-pink-400 to-rose-500', 
+    text: 'Holding hands while listening to this with my partner of 6 years 🤍',
+    popStyle: 'love',
+    popBadge: '💖 LOVE POP',
+    popHighlight: true,
+    heartsCount: 105
+  },
   { username: 'QuietSoul', avatarColor: 'from-indigo-400 to-blue-500', text: 'Sometimes crying at 11 PM to a stranger’s radio confession is the best medicine.' },
   { username: 'System', avatarColor: 'from-pink-600 to-rose-600', text: '✨ AmberGlow and 24 others just joined the room', isSystem: true },
   { username: 'LavenderDreams', avatarColor: 'from-purple-400 to-fuchsia-400', text: 'Maya’s laugh always makes my chest feel lighter.' },
+  { 
+    username: 'FlameKeeper', 
+    avatarColor: 'from-orange-500 to-amber-600', 
+    text: 'Sending a massive cheer to the night shift workers tuning in! You keep the world alive 🔥',
+    popStyle: 'flame',
+    popBadge: '🔥 FLAME POP',
+    popHighlight: true,
+    heartsCount: 67
+  },
   { username: 'NightRider', avatarColor: 'from-blue-500 to-cyan-500', text: 'Cruising on the coastal highway listening through the car speakers. City lights look ethereal.' },
   { username: 'PaperPlanes', avatarColor: 'from-yellow-400 to-orange-400', text: 'I wrote an unsent letter today. Feels good to leave it here.' },
-  { username: 'Julian (Host)', avatarColor: 'from-rose-500 to-pink-600', text: 'Next track coming up is dedicated to everyone who took a leap of faith this week.' },
+  { 
+    username: 'Julian (Host)', 
+    avatarColor: 'from-rose-500 to-pink-600', 
+    text: 'Next track coming up is dedicated to everyone who took a leap of faith this week.',
+    popStyle: 'radio',
+    popBadge: '🎙️ ON-AIR POP',
+    popHighlight: true,
+    heartsCount: 230
+  },
   { username: 'Rosewood', avatarColor: 'from-rose-400 to-pink-500', text: 'Who else saves all these episodes for long rainy train commutes?' },
   { username: 'MidnightCoffee', avatarColor: 'from-stone-400 to-zinc-500', text: 'Coffee at midnight while watching rain stream down the window glass ☕🌧️' },
-  { username: 'VelvetChime', avatarColor: 'from-fuchsia-500 to-purple-500', text: 'Big hugs to anyone having a quiet, lonely night. You are not alone.' },
+  { 
+    username: 'VelvetChime', 
+    avatarColor: 'from-fuchsia-500 to-purple-500', 
+    text: 'Big hugs to anyone having a quiet, lonely night. You are not alone.',
+    popStyle: 'warm',
+    popBadge: '☕ WARM HUG',
+    popHighlight: true,
+    heartsCount: 52
+  },
   { username: 'SkylineBlue', avatarColor: 'from-sky-400 to-blue-500', text: '12K listeners all feeling vulnerable together. The internet can be beautiful sometimes.' },
   { username: 'DuskTillDawn', avatarColor: 'from-violet-500 to-indigo-600', text: 'This community has saved me from spiraling so many times.' },
   { username: 'System', avatarColor: 'from-pink-600 to-rose-600', text: '💌 MoonlitSerenade shared a confession in #Secret', isSystem: true },
-  { username: 'WarmWhisper', avatarColor: 'from-pink-500 to-red-400', text: 'Never regret loving with your whole heart. Even if it broke, it was brave.' },
+  { 
+    username: 'WarmWhisper', 
+    avatarColor: 'from-pink-500 to-red-400', 
+    text: 'Never regret loving with your whole heart. Even if it broke, it was brave.',
+    popStyle: 'love',
+    popBadge: '💖 LOVE POP',
+    popHighlight: true,
+    heartsCount: 148
+  },
   { username: 'CloudNine', avatarColor: 'from-cyan-400 to-teal-400', text: 'Sending heart reactions from Melbourne! 🇦🇺❤️' },
-  { username: 'HearthKeeper', avatarColor: 'from-orange-400 to-amber-500', text: 'Soft blankets, warm tea, Love Broadcast on low volume... peak comfort.' }
+  { username: 'HearthKeeper', avatarColor: 'from-orange-400 to-amber-500', text: 'Soft blankets, warm tea, Heal Broadcast on low volume... peak comfort.' }
 ];
 
 export const INITIAL_ROOMS: CommunityRoom[] = [
@@ -684,3 +758,278 @@ export const INITIAL_USER_PROFILE: UserProfile = {
     }
   ]
 };
+
+export const INITIAL_SONGS: Song[] = [
+  {
+    id: 'song-1',
+    title: 'Sweet',
+    artist: 'Cigarettes After Sex',
+    album: 'Cigarettes After Sex',
+    coverImage: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=600&q=80',
+    duration: '4:52',
+    durationSeconds: 292,
+    genre: 'Dream Pop / Ambient',
+    mood: 'Romantic Longing',
+    audioTheme: 'lofi',
+    lyricsSnippet: 'It is so sweet, knowing that you love me...',
+    plays: 284000
+  },
+  {
+    id: 'song-2',
+    title: 'From The Start',
+    artist: 'Laufey',
+    album: 'Bewitched',
+    coverImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
+    duration: '2:49',
+    durationSeconds: 169,
+    genre: 'Bossa Nova / Jazz Pop',
+    mood: 'Playful Crush',
+    audioTheme: 'jazz',
+    lyricsSnippet: 'Oh, the burning pain listening to you harp on about some new soulmate...',
+    plays: 520000
+  },
+  {
+    id: 'song-3',
+    title: 'Apocalypse',
+    artist: 'Cigarettes After Sex',
+    album: 'Cigarettes After Sex',
+    coverImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
+    duration: '4:50',
+    durationSeconds: 290,
+    genre: 'Dream Pop',
+    mood: 'Late Night Melancholy',
+    audioTheme: 'ambient',
+    lyricsSnippet: 'Got the music in you baby, tell me why...',
+    plays: 740000
+  },
+  {
+    id: 'song-4',
+    title: 'White Ferrari',
+    artist: 'Frank Ocean',
+    album: 'Blonde',
+    coverImage: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80',
+    duration: '4:08',
+    durationSeconds: 248,
+    genre: 'Alternative R&B',
+    mood: 'Nostalgic Ache',
+    audioTheme: 'ambient',
+    lyricsSnippet: 'I care for you still and I will forever, that was my part of the deal...',
+    plays: 890000
+  },
+  {
+    id: 'song-5',
+    title: 'The Night We Met',
+    artist: 'Lord Huron',
+    album: 'Strange Trails',
+    coverImage: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
+    duration: '3:28',
+    durationSeconds: 208,
+    genre: 'Indie Folk',
+    mood: 'Heartbreak',
+    audioTheme: 'lofi',
+    lyricsSnippet: 'I had all and then most of you, some and now none of you...',
+    plays: 680000
+  },
+  {
+    id: 'song-6',
+    title: 'Come Away With Me',
+    artist: 'Norah Jones',
+    album: 'Come Away With Me',
+    coverImage: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=600&q=80',
+    duration: '3:18',
+    durationSeconds: 198,
+    genre: 'Vocal Jazz',
+    mood: 'Tender Warmth',
+    audioTheme: 'jazz',
+    lyricsSnippet: 'Come away with me in the night, come away with me and I will write you a song...',
+    plays: 430000
+  },
+  {
+    id: 'song-7',
+    title: 'Holocene',
+    artist: 'Bon Iver',
+    album: 'Bon Iver',
+    coverImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80',
+    duration: '5:37',
+    durationSeconds: 337,
+    genre: 'Indie Folk / Ambient',
+    mood: 'Cathartic Peace',
+    audioTheme: 'ambient',
+    lyricsSnippet: 'And at once I knew I was not magnificent...',
+    plays: 350000
+  },
+  {
+    id: 'song-8',
+    title: 'Somebody Else',
+    artist: 'The 1975',
+    album: 'I like it when you sleep...',
+    coverImage: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=600&q=80',
+    duration: '5:47',
+    durationSeconds: 347,
+    genre: 'Synthpop / Indie Pop',
+    mood: 'Bittersweet Regret',
+    audioTheme: 'lofi',
+    lyricsSnippet: 'I don’t want your body, but I hate to think about you with somebody else...',
+    plays: 620000
+  },
+  {
+    id: 'song-9',
+    title: 'Ocean Eyes',
+    artist: 'Billie Eilish',
+    album: 'Don’t Smile at Me',
+    coverImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+    duration: '3:20',
+    durationSeconds: 200,
+    genre: 'Dream Pop',
+    mood: 'Deep Devotion',
+    audioTheme: 'ambient',
+    lyricsSnippet: 'Can’t stop staring at those ocean eyes, burning cities and napalm skies...',
+    plays: 910000
+  },
+  {
+    id: 'song-10',
+    title: 'Mystery of Love',
+    artist: 'Sufjan Stevens',
+    album: 'Call Me By Your Name OST',
+    coverImage: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80',
+    duration: '4:09',
+    durationSeconds: 249,
+    genre: 'Indie Acoustic',
+    mood: 'Summer Nostalgia',
+    audioTheme: 'rain',
+    lyricsSnippet: 'Oh, to see without my eyes, the first time that you kissed me...',
+    plays: 470000
+  },
+  {
+    id: 'song-11',
+    title: 'Slow Dancing in the Dark',
+    artist: 'Joji',
+    album: 'BALLADS 1',
+    coverImage: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80',
+    duration: '3:29',
+    durationSeconds: 209,
+    genre: 'Lo-Fi / R&B',
+    mood: 'Late Night Agony',
+    audioTheme: 'lofi',
+    lyricsSnippet: 'Give me reasons we should be complete, you should be with him, I can’t compete...',
+    plays: 780000
+  },
+  {
+    id: 'song-12',
+    title: 'Cardigan',
+    artist: 'Taylor Swift',
+    album: 'Folklore',
+    coverImage: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80',
+    duration: '3:59',
+    durationSeconds: 239,
+    genre: 'Chamber Pop / Folk',
+    mood: 'Cozy Nostalgia',
+    audioTheme: 'rain',
+    lyricsSnippet: 'And when I felt like I was an old cardigan under someone’s bed, you put me on and said I was your favorite...',
+    plays: 850000
+  },
+  {
+    id: 'song-13',
+    title: 'Best Part (feat. H.E.R.)',
+    artist: 'Daniel Caesar',
+    album: 'Freudian',
+    coverImage: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600&q=80',
+    duration: '3:29',
+    durationSeconds: 209,
+    genre: 'Soul / R&B',
+    mood: 'Pure Love',
+    audioTheme: 'jazz',
+    lyricsSnippet: 'You’re my water when I’m stuck in the desert, you’re the Tylenol I take when my head hurts...',
+    plays: 930000
+  },
+  {
+    id: 'song-14',
+    title: 'Nothing',
+    artist: 'Bruno Major',
+    album: 'To Let a Good Thing Die',
+    coverImage: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=600&q=80',
+    duration: '2:43',
+    durationSeconds: 163,
+    genre: 'R&B / Soul',
+    mood: 'Gentle Comfort',
+    audioTheme: 'lofi',
+    lyricsSnippet: 'We could play Nintendo, though I always lose, because you’ll watch the TV while I’m watching you...',
+    plays: 380000
+  },
+  {
+    id: 'song-15',
+    title: 'Beside You',
+    artist: 'keshi',
+    album: 'GABRIEL',
+    coverImage: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
+    duration: '2:46',
+    durationSeconds: 166,
+    genre: 'Lofi R&B',
+    mood: 'Midnight Cruise',
+    audioTheme: 'lofi',
+    lyricsSnippet: 'Hear your voice in the dark, I’ve been loving you right from the start...',
+    plays: 490000
+  },
+  {
+    id: 'song-16',
+    title: 'First Love / Late Spring',
+    artist: 'Mitski',
+    album: 'Bury Me at Makeout Creek',
+    coverImage: 'https://images.unsplash.com/photo-1528722828814-77b9b83aafb2?auto=format&fit=crop&w=600&q=80',
+    duration: '4:38',
+    durationSeconds: 278,
+    genre: 'Indie Rock / Folk',
+    mood: 'Vulnerable Heartache',
+    audioTheme: 'ambient',
+    lyricsSnippet: 'Please, hurry, leave me, I can’t breathe, please don’t say you love me...',
+    plays: 610000
+  }
+];
+
+export const INITIAL_PLAYLISTS: Playlist[] = [
+  {
+    id: 'pl-1',
+    name: 'Midnight Rain & Cigarettes',
+    description: 'Drifting chords, dream pop reverb, and smoke lingering by an open balcony window at 2 AM.',
+    coverImage: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=600&q=80',
+    colorGradient: 'from-pink-900/80 via-purple-950/80 to-[#14121C]',
+    songIds: ['song-1', 'song-3', 'song-4', 'song-8', 'song-15'],
+    createdBy: 'Heal Broadcast Editorial'
+  },
+  {
+    id: 'pl-2',
+    name: 'Unsent Love Letters (Acoustic)',
+    description: 'Stripped guitars, trembling piano keys, and lyrics that feel like a private diary entry.',
+    coverImage: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80',
+    colorGradient: 'from-rose-950/80 via-pink-950/80 to-[#14121C]',
+    songIds: ['song-5', 'song-7', 'song-10', 'song-12', 'song-16'],
+    createdBy: 'Julian Vance'
+  },
+  {
+    id: 'pl-3',
+    name: '3 AM Tokyo Neon Lofi',
+    description: 'Gentle vinyl crackles, mellow electric piano, and city lights reflected on wet asphalt.',
+    coverImage: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
+    colorGradient: 'from-indigo-950/80 via-blue-950/80 to-[#14121C]',
+    songIds: ['song-4', 'song-9', 'song-11', 'song-15'],
+    createdBy: 'Maya Lin'
+  },
+  {
+    id: 'pl-4',
+    name: 'Friends to Lovers Slow Burn',
+    description: 'The golden hour when comfortable camaraderie quietly blossoms into devotion.',
+    coverImage: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80',
+    colorGradient: 'from-amber-950/80 via-rose-950/80 to-[#14121C]',
+    songIds: ['song-2', 'song-6', 'song-13', 'song-14'],
+    createdBy: 'Heal Broadcast Editorial'
+  },
+  {
+    id: 'pl-5',
+    name: 'Soft Solace & Healing',
+    description: 'Gentle sonic blankets when the heart feels tender and bruised from letting go.',
+    coverImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80',
+    colorGradient: 'from-teal-950/80 via-emerald-950/80 to-[#14121C]',
+    songIds: ['song-4', 'song-6', 'song-7', 'song-10', 'song-14'],
+    createdBy: 'Dr. Evelyn Ward'
+  }
+];

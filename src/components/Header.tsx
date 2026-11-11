@@ -45,6 +45,7 @@ export const Header: React.FC = () => {
 
   const topTabs: Array<{ id: NavigationTab; label: string }> = [
     { id: 'home', label: 'Home' },
+    { id: 'music', label: 'Music & Playlists' },
     { id: 'episodes', label: 'Episodes' },
     { id: 'confessions', label: 'Confessions' },
     { id: 'community', label: 'Community' },
@@ -85,7 +86,7 @@ export const Header: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search confessions, episodes..."
+            placeholder="Search songs, confessions, episodes..."
             className="w-full pl-9 pr-7 py-1.5 rounded-full bg-[#14121C] border border-white/10 text-xs sm:text-sm text-[#E8E4F0] placeholder-[#8C86A0] focus:outline-none focus:border-[#FF4D8D]/60 focus:ring-1 focus:ring-[#FF4D8D]/30 transition-all"
           />
           {searchQuery && (

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { 
   NavigationTab, 
   Confession, 
@@ -7,7 +7,9 @@ import {
   Conversation, 
   NotificationItem, 
   UserProfile,
-  MoodTag
+  MoodTag,
+  Song,
+  Playlist
 } from '../types';
 import { 
   INITIAL_CONFESSIONS, 
@@ -15,7 +17,9 @@ import {
   INITIAL_ROOMS, 
   INITIAL_CONVERSATIONS, 
   INITIAL_NOTIFICATIONS, 
-  INITIAL_USER_PROFILE 
+  INITIAL_USER_PROFILE,
+  INITIAL_SONGS,
+  INITIAL_PLAYLISTS
 } from '../data/mockData';
 import { radioAudio } from '../utils/audioSynthesizer';
 
@@ -39,22 +43,53 @@ interface AppContextType {
   toggleSaveConfession: (id: string) => void;
   addCommentToConfession: (confessionId: string, text: string) => void;
 
-  // Episodes & Audio
+  // Episodes & Songs & Audio
   episodes: Episode[];
+  songs: Song[];
+  playlists: Playlist[];
   activeEpisode: Episode | null;
+  activeSong: Song | null;
+  activePlaylist: Playlist | null;
+  activeMediaType: 'episode' | 'song';
   isPlaying: boolean;
   isLiveMode: boolean;
   playbackProgress: number; // 0 to 100
   playbackTime: number; // in seconds
   volume: number; // 0 to 1
   togglePlayEpisode: (episode?: Episode, forcePlay?: boolean) => void;
+  playSong: (song: Song, playlistContext?: Playlist) => void;
+  togglePlayActive: () => void;
+  playNextTrack: () => void;
+  playPrevTrack: () => void;
   startLiveStream: () => void;
   seekToProgress: (percent: number) => void;
   setVolume: (val: number) => void;
   toggleLikeEpisode: (id: string) => void;
   toggleSaveEpisode: (id: string) => void;
+  toggleLikeSong: (id: string) => void;
 
-  // Modal
+  // Playlists
+  createPlaylist: (name: string, description: string) => Playlist;
+  addSongToPlaylist: (playlistId: string, songId: string) => void;
+  removeSongFromPlaylist: (playlistId: string, songId: string) => void;
+  playPlaylist: (playlist: Playlist, startIndex?: number) => void;
+  addNewCustomSong: (songData: {
+    title: string;
+    artist: string;
+    album?: string;
+    genre: string;
+    mood: string;
+    coverImage?: string;
+    lyricsSnippet?: string;
+  }) => Song;
+
+  // Playlist Modal
+  isPlaylistModalOpen: boolean;
+  setIsPlaylistModalOpen: (open: boolean) => void;
+  songForPlaylistModal: Song | null;
+  openAddToPlaylistModal: (song: Song) => void;
+
+  // Confession Modal
   isConfessionModalOpen: boolean;
   setIsConfessionModalOpen: (open: boolean) => void;
 
@@ -94,6 +129,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isConfessionModalOpen, setIsConfessionModalOpen] = useState(false);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
 
+  // Playlist Add Modal State
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+  const [songForPlaylistModal, setSongForPlaylistModal] = useState<Song | null>(null);
+
   // Persistent Confessions
   const [confessions, setConfessions] = useState<Confession[]>(() => {
     try {
@@ -116,8 +155,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_EPISODES;
   });
 
+  // Songs
+  const [songs, setSongs] = useState<Song[]>(() => {
+    try {
+      const saved = localStorage.getItem('love_broadcast_songs');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return INITIAL_SONGS;
+  });
+
+  // Playlists
+  const [playlists, setPlaylists] = useState<Playlist[]>(() => {
+    try {
+      const saved = localStorage.getItem('love_broadcast_playlists');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return INITIAL_PLAYLISTS;
+  });
+
   // Audio Player State
+  const [activeMediaType, setActiveMediaType] = useState<'episode' | 'song'>('episode');
   const [activeEpisode, setActiveEpisode] = useState<Episode | null>(INITIAL_EPISODES[0]);
+  const [activeSong, setActiveSong] = useState<Song | null>(null);
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isLiveMode, setIsLiveMode] = useState<boolean>(false);
   const [playbackTime, setPlaybackTime] = useState<number>(342); // starts 5m in
@@ -165,7 +229,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const triggerFloatingHeart = useCallback(() => {
     const id = Date.now() + Math.random();
-    const x = Math.floor(Math.random() * 80) + 10; // 10% to 90%
+    const x = Math.floor(Math.random() * 80) + 10;
     setFloatingHearts(prev => [...prev.slice(-15), { id, x }]);
     setTimeout(() => {
       setFloatingHearts(prev => prev.filter(h => h.id !== id));
@@ -176,52 +240,101 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     try {
       localStorage.setItem('love_broadcast_confessions', JSON.stringify(confessions));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [confessions]);
 
   useEffect(() => {
     try {
       localStorage.setItem('love_broadcast_episodes', JSON.stringify(episodes));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [episodes]);
 
   useEffect(() => {
     try {
+      localStorage.setItem('love_broadcast_songs', JSON.stringify(songs));
+    } catch {}
+  }, [songs]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('love_broadcast_playlists', JSON.stringify(playlists));
+    } catch {}
+  }, [playlists]);
+
+  useEffect(() => {
+    try {
       localStorage.setItem('love_broadcast_rooms', JSON.stringify(communityRooms));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [communityRooms]);
 
   useEffect(() => {
     try {
       localStorage.setItem('love_broadcast_conversations', JSON.stringify(conversations));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [conversations]);
 
   useEffect(() => {
     try {
       localStorage.setItem('love_broadcast_profile', JSON.stringify(userProfile));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [userProfile]);
 
-  // Audio timer ticker
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playNextTrackRef = useRef<() => void>(() => {});
+  const activeSongRef = useRef<Song | null>(null);
+  activeSongRef.current = activeSong;
+
+  // Initialize HTML5 Audio Element for real song streams
+  useEffect(() => {
+    const audio = new Audio();
+    audio.preload = 'metadata';
+    audioRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      setPlaybackTime(Math.floor(audio.currentTime));
+    };
+
+    const handleEnded = () => {
+      playNextTrackRef.current();
+    };
+
+    const handleError = () => {
+      // Fallback to ambient lofi synthesizer if stream is blocked or offline
+      if (activeSongRef.current) {
+        radioAudio.playTheme(activeSongRef.current.audioTheme || 'lofi');
+      }
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+    };
+  }, []);
+
+  // Audio timer ticker for synthetic themes and episodes
   useEffect(() => {
     let interval: number;
-    if (isPlaying) {
+    const hasActiveAudioStream = activeMediaType === 'song' && !!(activeSong?.audioUrl || activeSong?.previewUrl);
+    
+    if (isPlaying && !hasActiveAudioStream) {
       interval = window.setInterval(() => {
         setPlaybackTime(prev => {
-          if (!activeEpisode) return prev + 1;
           if (isLiveMode) return prev + 1;
-          if (prev >= activeEpisode.durationSeconds) {
+          const maxSec = activeMediaType === 'song' && activeSong 
+            ? activeSong.durationSeconds 
+            : (activeEpisode?.durationSeconds || 300);
+
+          if (prev >= maxSec) {
+            // If in a playlist or queue, advance to next track
+            if (activeMediaType === 'song') {
+              playNextTrackRef.current();
+            }
             return 0;
           }
           return prev + 1;
@@ -229,19 +342,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, activeEpisode, isLiveMode]);
+  }, [isPlaying, activeMediaType, activeSong, activeEpisode, isLiveMode]);
 
   const setVolume = (val: number) => {
     setVolumeState(val);
+    if (audioRef.current) {
+      audioRef.current.volume = val;
+    }
     radioAudio.setVolume(val);
   };
 
+  // Play Episode
   const togglePlayEpisode = (episode?: Episode, forcePlay?: boolean) => {
     const target = episode || activeEpisode || episodes[0];
-    const shouldPlay = forcePlay !== undefined ? forcePlay : !(isPlaying && activeEpisode?.id === target.id);
+    const shouldPlay = forcePlay !== undefined ? forcePlay : !(isPlaying && activeMediaType === 'episode' && activeEpisode?.id === target.id);
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
 
     if (shouldPlay) {
+      setActiveMediaType('episode');
       setActiveEpisode(target);
+      setActiveSong(null);
       setIsPlaying(true);
       setIsLiveMode(target.id === 'ep-1');
       radioAudio.playTheme(target.audioTheme || 'lofi');
@@ -251,9 +374,123 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Play Song with real stream preview or ambient synthesis
+  const playSong = (song: Song, playlistContext?: Playlist) => {
+    setActiveMediaType('song');
+    setActiveSong(song);
+    if (playlistContext) {
+      setActivePlaylist(playlistContext);
+    }
+    setIsLiveMode(false);
+    setIsPlaying(true);
+    setPlaybackTime(0);
+
+    const streamUrl = song.audioUrl || song.previewUrl;
+    if (streamUrl && audioRef.current) {
+      radioAudio.stop();
+      audioRef.current.src = streamUrl;
+      audioRef.current.volume = volume;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {
+        // Fallback to ambient chord synth if browser autoplay blocks or stream errors
+        radioAudio.playTheme(song.audioTheme || 'lofi');
+      });
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      radioAudio.playTheme(song.audioTheme || 'lofi');
+    }
+
+    // Add or increment in local songs registry
+    setSongs(prev => {
+      const exists = prev.some(s => s.id === song.id);
+      if (exists) {
+        return prev.map(s => (s.id === song.id ? { ...s, plays: s.plays + 1 } : s));
+      }
+      return [{ ...song, plays: (song.plays || 0) + 1 }, ...prev];
+    });
+
+    setUserProfile(prev => ({
+      ...prev,
+      stats: {
+        ...prev.stats,
+        hoursListened: Number((prev.stats.hoursListened + 0.05).toFixed(1))
+      }
+    }));
+
+    triggerFloatingHeart();
+  };
+
+  // Toggle active player state
+  const togglePlayActive = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      radioAudio.stop();
+    } else {
+      setIsPlaying(true);
+      const streamUrl = activeSong?.audioUrl || activeSong?.previewUrl;
+      if (activeMediaType === 'song' && streamUrl && audioRef.current) {
+        radioAudio.stop();
+        audioRef.current.play().catch(() => {
+          radioAudio.playTheme(activeSong?.audioTheme || 'lofi');
+        });
+      } else if (activeMediaType === 'song' && activeSong) {
+        radioAudio.playTheme(activeSong?.audioTheme || 'lofi');
+      } else if (activeEpisode) {
+        radioAudio.playTheme(activeEpisode.audioTheme || 'lofi');
+      }
+    }
+  };
+
+  // Next / Previous Track in Playlist or Song List
+  const playNextTrack = () => {
+    if (activeMediaType === 'song') {
+      const trackList = activePlaylist 
+        ? activePlaylist.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) as Song[]
+        : songs;
+
+      if (trackList.length === 0) return;
+      const currentIndex = trackList.findIndex(s => s.id === activeSong?.id);
+      const nextIndex = (currentIndex + 1) % trackList.length;
+      playSong(trackList[nextIndex], activePlaylist || undefined);
+    }
+  };
+  playNextTrackRef.current = playNextTrack;
+
+  const playPrevTrack = () => {
+    if (activeMediaType === 'song') {
+      const trackList = activePlaylist 
+        ? activePlaylist.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) as Song[]
+        : songs;
+
+      if (trackList.length === 0) return;
+      const currentIndex = trackList.findIndex(s => s.id === activeSong?.id);
+      const prevIndex = (currentIndex - 1 + trackList.length) % trackList.length;
+      playSong(trackList[prevIndex], activePlaylist || undefined);
+    }
+  };
+
+  const playPlaylist = (playlist: Playlist, startIndex = 0) => {
+    setActivePlaylist(playlist);
+    const playlistSongs = playlist.songIds.map(id => songs.find(s => s.id === id)).filter(Boolean) as Song[];
+    if (playlistSongs.length > 0) {
+      const targetSong = playlistSongs[Math.min(startIndex, playlistSongs.length - 1)];
+      playSong(targetSong, playlist);
+    }
+  };
+
   const startLiveStream = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     const liveEp = episodes.find(e => e.id === 'ep-1') || episodes[0];
+    setActiveMediaType('episode');
     setActiveEpisode(liveEp);
+    setActiveSong(null);
     setIsLiveMode(true);
     setIsPlaying(true);
     setCurrentTab('now-live');
@@ -261,14 +498,130 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const seekToProgress = (percent: number) => {
-    if (!activeEpisode || isLiveMode) return;
-    const newSeconds = Math.round((percent / 100) * activeEpisode.durationSeconds);
+    if (isLiveMode) return;
+    const streamUrl = activeSong?.audioUrl || activeSong?.previewUrl;
+    if (activeMediaType === 'song' && streamUrl && audioRef.current && audioRef.current.duration) {
+      const targetTime = (percent / 100) * audioRef.current.duration;
+      audioRef.current.currentTime = targetTime;
+      setPlaybackTime(Math.floor(targetTime));
+      return;
+    }
+
+    const maxSec = activeMediaType === 'song' && activeSong
+      ? activeSong.durationSeconds
+      : (activeEpisode?.durationSeconds || 300);
+
+    const newSeconds = Math.round((percent / 100) * maxSec);
     setPlaybackTime(newSeconds);
   };
 
-  const playbackProgress = activeEpisode && !isLiveMode 
-    ? Math.min(100, (playbackTime / activeEpisode.durationSeconds) * 100)
+  const currentDurationSeconds = activeMediaType === 'song' && activeSong
+    ? activeSong.durationSeconds
+    : (activeEpisode?.durationSeconds || 300);
+
+  const playbackProgress = !isLiveMode 
+    ? Math.min(100, (playbackTime / currentDurationSeconds) * 100)
     : 65;
+
+  // Like Song
+  const toggleLikeSong = (songId: string) => {
+    setSongs(prev =>
+      prev.map(s => {
+        if (s.id === songId) {
+          const isLiked = !s.isLiked;
+          if (isLiked) triggerFloatingHeart();
+          return { ...s, isLiked };
+        }
+        return s;
+      })
+    );
+  };
+
+  // Playlists CRUD
+  const createPlaylist = (name: string, description: string): Playlist => {
+    const newPl: Playlist = {
+      id: `pl-${Date.now()}`,
+      name: name.trim() || 'My Late Night Vibes',
+      description: description.trim() || 'Handpicked nocturnal frequencies.',
+      coverImage: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=600&q=80',
+      colorGradient: 'from-pink-900/80 via-purple-950/80 to-[#14121C]',
+      songIds: [],
+      isCustom: true,
+      createdBy: userProfile.alias
+    };
+
+    setPlaylists(prev => [newPl, ...prev]);
+    triggerFloatingHeart();
+    return newPl;
+  };
+
+  const addSongToPlaylist = (playlistId: string, songId: string) => {
+    setPlaylists(prev =>
+      prev.map(pl => {
+        if (pl.id === playlistId) {
+          if (!pl.songIds.includes(songId)) {
+            return { ...pl, songIds: [...pl.songIds, songId] };
+          }
+        }
+        return pl;
+      })
+    );
+    triggerFloatingHeart();
+  };
+
+  const removeSongFromPlaylist = (playlistId: string, songId: string) => {
+    setPlaylists(prev =>
+      prev.map(pl => {
+        if (pl.id === playlistId) {
+          return { ...pl, songIds: pl.songIds.filter(id => id !== songId) };
+        }
+        return pl;
+      })
+    );
+  };
+
+  // Add custom song (lets anyone search/add any song!)
+  const addNewCustomSong = (songData: {
+    title: string;
+    artist: string;
+    album?: string;
+    genre: string;
+    mood: string;
+    coverImage?: string;
+    lyricsSnippet?: string;
+  }): Song => {
+    const durationMins = 3;
+    const durationSecs = Math.floor(Math.random() * 40) + 10;
+    const durationStr = `${durationMins}:${durationSecs.toString().padStart(2, '0')}`;
+
+    const themes: Array<'lofi' | 'ambient' | 'jazz' | 'rain'> = ['lofi', 'ambient', 'jazz', 'rain'];
+    const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
+
+    const created: Song = {
+      id: `song-${Date.now()}`,
+      title: songData.title.trim(),
+      artist: songData.artist.trim(),
+      album: songData.album?.trim() || 'Midnight Singles',
+      coverImage: songData.coverImage || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80',
+      duration: durationStr,
+      durationSeconds: durationMins * 60 + durationSecs,
+      genre: songData.genre || 'Late Night Indie',
+      mood: songData.mood || 'Gentle Resonance',
+      audioTheme: chosenTheme,
+      lyricsSnippet: songData.lyricsSnippet || 'Under the midnight rain...',
+      plays: 1,
+      isLiked: true
+    };
+
+    setSongs(prev => [created, ...prev]);
+    playSong(created);
+    return created;
+  };
+
+  const openAddToPlaylistModal = (song: Song) => {
+    setSongForPlaylistModal(song);
+    setIsPlaylistModalOpen(true);
+  };
 
   // Confessions Actions
   const addConfession = (newConf: {
@@ -295,7 +648,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setConfessions(prev => [created, ...prev]);
 
-    // Update profile stats
     setUserProfile(prev => ({
       ...prev,
       stats: {
@@ -305,7 +657,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }));
 
-    // Trigger floating heart
     triggerFloatingHeart();
   };
 
@@ -476,18 +827,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleSaveConfession,
         addCommentToConfession,
         episodes,
+        songs,
+        playlists,
         activeEpisode,
+        activeSong,
+        activePlaylist,
+        activeMediaType,
         isPlaying,
         isLiveMode,
         playbackProgress,
         playbackTime,
         volume,
         togglePlayEpisode,
+        playSong,
+        togglePlayActive,
+        playNextTrack,
+        playPrevTrack,
         startLiveStream,
         seekToProgress,
         setVolume,
         toggleLikeEpisode,
         toggleSaveEpisode,
+        toggleLikeSong,
+        createPlaylist,
+        addSongToPlaylist,
+        removeSongFromPlaylist,
+        playPlaylist,
+        addNewCustomSong,
+        isPlaylistModalOpen,
+        setIsPlaylistModalOpen,
+        songForPlaylistModal,
+        openAddToPlaylistModal,
         isConfessionModalOpen,
         setIsConfessionModalOpen,
         communityRooms,

@@ -91,7 +91,7 @@ export const ProfilePage: React.FC = () => {
                 {userProfile.tagline}
               </p>
               <span className="text-[11px] text-[#8C86A0]/70 mt-1 block">
-                Member of Love Broadcast since {userProfile.joinedDate}
+                Member of Heal Broadcast since {userProfile.joinedDate}
               </span>
             </div>
           </div>
@@ -234,7 +234,7 @@ export const ProfilePage: React.FC = () => {
           Listener Badges & Honor
         </h2>
         <p className="text-xs text-[#8C86A0] mb-4">
-          Milestones unlocked during your midnight journeys on Love Broadcast.
+          Milestones unlocked during your midnight journeys on Heal Broadcast.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
