@@ -1,0 +1,6 @@
+{
+  "name": "Love Broadcast",
+  "description": "An anonymous confessions and live-podcast community platform with late-night radio vibes, interactive chat, and community stories.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
